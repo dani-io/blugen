@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+  backend:
+    build: ./backend
+    container_name: blugen-api
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DATABASE_URL=sqlite:///./data/blugen.db
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+    networks:
+      - blugen
+
+  frontend:
+    build: ./frontend
+    container_name: blugen-web
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - blugen
+
+  nginx:
+    image: nginx:alpine
+    container_name: blugen-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./certbot/www:/var/www/certbot:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - blugen
+
+  certbot:
+    image: certbot/certbot
+    container_name: blugen-certbot
+    volumes:
+      - ./certbot/www:/var/www/certbot:rw
+      - ./certbot/conf:/etc/letsencrypt:rw
+
+networks:
+  blugen:
+    driver: bridge

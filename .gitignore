@@ -1,8 +1,8 @@
-node_modules/
-dist/
+.env
 data/
-*.db
+certbot/
+nginx/nginx.conf.bak
+nginx/nginx.conf.bak2
 __pycache__/
 *.pyc
-.env
-.vite/
+node_modules/
